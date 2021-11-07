@@ -3,42 +3,20 @@
   <button class="btn btn-danger my-2 my-sm-0" (click)="onLogout()">Logout</button>
 </nav>
 
-<div class="card m-5" style="width:18rem" *ngIf="userDetails">
+<div class="row mt-12">
+<div class="card col-md-4" style="width:18rem" *ngIf="userDetails">
   <ul class="list-group">
     <li class="list-group-item"><strong>Username : </strong>{{userDetails.userName}}</li>
     <li class="list-group-item"><strong>FullName : </strong>{{userDetails.fullName}}</li>
     <li class="list-group-item"><strong>Email : </strong>{{userDetails.email}}</li>
   </ul>
 </div>
-<!-- <form [formGroup]="myForm" autocomplete="off" (ngSubmit)="submit()" class="card m-6">
-     
-  <div class="form-group">
-      <label for="name">Name</label>
-      <input 
-          formControlName="name"
-          id="name" 
-          type="text" 
-          class="form-control">
-      <div *ngIf="f.name.touched && f.name.invalid" class="alert alert-danger">
-          <div *ngIf="f.name.errors.required">Name is required.</div>
-          <div *ngIf="f.name.errors.minlength">Name should be 3 character.</div>
-      </div>
+<div class="col-md-8">
+  <app-upload></app-upload>
+</div>
+</div>
+<!-- <div class="row">
+  <div class="offset-md-5 col-md-2">
+    <button type="button" class="btn btn-primary" (click)="onCreate()">Create </button>
   </div>
-  
-  <div class="form-group">
-      <label for="file">File</label>
-      <input 
-          formControlName="file"
-          id="file" 
-          type="file" 
-          class="form-control"
-          (change)="onFileChange($event)">
-      <div *ngIf="f.file.touched && f.file.invalid" class="alert alert-danger">
-          <div *ngIf="f.file.errors.required">File is required.</div>
-      </div>
-  </div>
-  
-  <img [src]="imageSrc" *ngIf="imageSrc" style="height: 300px; width:500px">
-      
-  <button class="btn btn-primary" type="submit">Submit</button>
-</form> -->
+</div> -->

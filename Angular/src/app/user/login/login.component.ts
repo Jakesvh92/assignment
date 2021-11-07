@@ -14,6 +14,25 @@ export class LoginComponent implements OnInit {
     UserName: '',
     Password: ''
   }
+
+  user = {
+    fullName:"",
+    id:"",
+    userName:"",
+    normalizedUserName:"",
+    email:"",
+    normalizedEmail:"",
+    emailConfirmed:false,
+    passwordHash:"",
+    securityStamp:"",
+    concurrencyStamp:"",
+    phoneNumber:null,
+    phoneNumberConfirmed:false,
+    twoFactorEnabled:false,
+    lockoutEnd:null,
+    lockoutEnabled:true,
+    accessFailedCount:0
+ }
   constructor(private service: UserService, private router: Router, private toastr: ToastrService) { }
 
   ngOnInit() {
@@ -24,7 +43,14 @@ export class LoginComponent implements OnInit {
   onSubmit(form: NgForm) {
     this.service.login(form.value).subscribe(
       (res: any) => {
+        debugger;
+        var user = this.user;
+        user = res.user;
         localStorage.setItem('token', res.token);
+        localStorage.setItem('usermail', user.email);
+        localStorage.setItem('userid', user.id);
+        localStorage.setItem('username', user.userName);
+        localStorage.setItem('userfullname', user.fullName);
         this.router.navigateByUrl('/home');
       },
       err => {
