@@ -15,5 +15,6 @@ namespace WebApiApp.Models
         }
 
         public DbSet<ApplicationUser> ApplicationUsers { get; set; }
+        public DbSet<UploadFormData> UploadFormDatas { get; set; }
     }
 }

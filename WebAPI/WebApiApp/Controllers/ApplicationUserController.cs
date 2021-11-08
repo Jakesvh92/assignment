@@ -23,7 +23,7 @@ namespace WebAPI.Controllers
         private UserManager<ApplicationUser> _userManager;
         private SignInManager<ApplicationUser> _singInManager;
         private readonly ApplicationSettings _appSettings;
-
+        private readonly AuthenticationContext _context;
         public ApplicationUserController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, IOptions<ApplicationSettings> appSettings)
         {
             _userManager = userManager;
@@ -82,7 +82,7 @@ namespace WebAPI.Controllers
 
         [HttpPost, DisableRequestSizeLimit]
         [Route("Upload")]
-        public IActionResult Upload()
+        public IActionResult Upload([FromForm] UploadFormDataRequest formData)
         {
             try
             {
@@ -98,6 +98,7 @@ namespace WebAPI.Controllers
                     {
                         file.CopyTo(stream);
                     }
+
                     return Ok(new { dbPath });
                 }
                 else

@@ -3,7 +3,8 @@
   <button class="btn btn-danger my-2 my-sm-0" (click)="onLogout()">Logout</button>
 </nav>
 
-<div class="row mt-12">
+<div class="row mt-12" style="margin-top: 2%;">
+  <div class="col-md-1"></div>
 <div class="card col-md-4" style="width:18rem" *ngIf="userDetails">
   <ul class="list-group">
     <li class="list-group-item"><strong>Username : </strong>{{userDetails.userName}}</li>
@@ -11,7 +12,7 @@
     <li class="list-group-item"><strong>Email : </strong>{{userDetails.email}}</li>
   </ul>
 </div>
-<div class="col-md-8">
+<div class="col-md-6">
   <app-upload></app-upload>
 </div>
 </div>
