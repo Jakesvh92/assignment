@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
@@ -21,7 +21,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Resources\Images\" />
+    <None Include="wwwroot\Resources\Images\aadrit.JPG" />
+    <None Include="wwwroot\Resources\Images\bg1.jpg" />
+    <None Include="wwwroot\Resources\Images\bg1.jpg637720110191472675" />
+    <None Include="wwwroot\Resources\Images\bg1.jpg637720110885203670" />
+    <None Include="wwwroot\Resources\Images\err.JPG" />
+    <None Include="wwwroot\Resources\Images\IMG_20160526_140500.jpg" />
+    <None Include="wwwroot\Resources\Images\vidai.JPG" />
   </ItemGroup>
 
 </Project>

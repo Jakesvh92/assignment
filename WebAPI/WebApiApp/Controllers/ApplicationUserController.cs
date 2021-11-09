@@ -24,11 +24,12 @@ namespace WebAPI.Controllers
         private SignInManager<ApplicationUser> _singInManager;
         private readonly ApplicationSettings _appSettings;
         private readonly AuthenticationContext _context;
-        public ApplicationUserController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, IOptions<ApplicationSettings> appSettings)
+        public ApplicationUserController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, IOptions<ApplicationSettings> appSettings, AuthenticationContext context)
         {
             _userManager = userManager;
             _singInManager = signInManager;
             _appSettings = appSettings.Value;
+            _context = context;
         }
 
         [HttpPost]
@@ -36,7 +37,8 @@ namespace WebAPI.Controllers
         //POST : /api/ApplicationUser/Register
         public async Task<Object> PostApplicationUser(ApplicationUserModel model)
         {
-            var applicationUser = new ApplicationUser() {
+            var applicationUser = new ApplicationUser()
+            {
                 UserName = model.UserName,
                 Email = model.Email,
                 FullName = model.FullName
@@ -79,16 +81,17 @@ namespace WebAPI.Controllers
             else
                 return BadRequest(new { message = "Username or password is incorrect." });
         }
-
+       
         [HttpPost, DisableRequestSizeLimit]
         [Route("Upload")]
         public IActionResult Upload([FromForm] UploadFormDataRequest formData)
         {
             try
             {
-                var file = Request.Form.Files[0];
-                var folderName = Path.Combine("Resources", "Images");
+                var file = formData.file;
+                var folderName = Path.Combine(@"wwwroot\Resources", "Images");
                 var pathToSave = Path.Combine(Directory.GetCurrentDirectory(), folderName);
+                List<UploadFormData> result = new List<UploadFormData>();
                 if (file.Length > 0)
                 {
                     var fileName = ContentDispositionHeaderValue.Parse(file.ContentDisposition).FileName.Trim('"');
@@ -98,8 +101,29 @@ namespace WebAPI.Controllers
                     {
                         file.CopyTo(stream);
                     }
+                    using (_context)
+                    {
+                        UploadFormData ufd = new UploadFormData
+                        {
+                            filename = fileName,
+                            filepath = fullPath,
+                            longitude = formData.longitude,
+                            latitude = formData.latitude,
+                            useremail = formData.useremail,
+                            userid = formData.userid,
+                            userName = formData.userName,
+                            imgtype = formData.imgtype,
+                            tags = formData.tags,
+                            captureBy = formData.userid,
+                            captureDate = DateTime.Now
+                        };
+                        _context.UploadFormDatas.Add(ufd);
+                        _context.SaveChanges();
 
-                    return Ok(new { dbPath });
+                        result = _context.UploadFormDatas.ToList();
+                    }
+
+                    return Ok(new { dbPath = dbPath, result= result });
                 }
                 else
                 {

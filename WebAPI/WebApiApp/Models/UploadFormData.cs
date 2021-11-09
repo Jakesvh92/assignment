@@ -27,6 +27,14 @@ namespace WebApiApp.Models
         public string useremail { get; set; }
         [Column(TypeName = "nvarchar(500)")]
         public string userid { get; set; }
+        [Column(TypeName = "nvarchar(500)")]
+        public string tags { get; set; }
+        [Column(TypeName = "datetime")]
+        public DateTime captureDate { get; set; }
+        [Column(TypeName = "nvarchar(500)")]
+        public string captureBy { get; set; }
+        [Column(TypeName = "nvarchar(500)")]
+        public string imgtype { get; set; }
 
     }
     public class UploadFormDataRequest : UploadFormData

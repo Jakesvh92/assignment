@@ -130,3 +130,4 @@ G:\Project_P2Info\assignment\WebAPI\WebApiApp\obj\Debug\net5.0\WebApiApp.dll
 G:\Project_P2Info\assignment\WebAPI\WebApiApp\obj\Debug\net5.0\ref\WebApiApp.dll
 G:\Project_P2Info\assignment\WebAPI\WebApiApp\obj\Debug\net5.0\WebApiApp.pdb
 G:\Project_P2Info\assignment\WebAPI\WebApiApp\obj\Debug\net5.0\WebApiApp.genruntimeconfig.cache
+G:\Project_P2Info\assignment\WebAPI\WebApiApp\bin\Debug\net5.0\libman.json

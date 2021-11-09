@@ -1,5 +1,6 @@
 import { Component, OnInit, Output, EventEmitter } from '@angular/core';
 import { HttpEventType, HttpClient } from '@angular/common/http';
+import { FormBuilder, Validators } from '@angular/forms';
 
 @Component({
   selector: 'app-upload',
@@ -13,11 +14,37 @@ export class UploadComponent implements OnInit {
   public lat;
   public lng;
   public myFiles;
+  public resData: any;
   
+  public tags: string = '';
+  public imgtype: string = '';
+
+  
+  public dataList = [];
+
   @Output() public onUploadFinished = new EventEmitter();
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient, private formBuilder: FormBuilder) { }
+  
+  formModel = this.formBuilder.group({
+    tags: ['', Validators.required],
+    imgtype: ['', Validators.required]
+  });
+  groupBy(list, keyGetter) {
+    const map = new Map();
+    list.forEach((item) => {
+       const key = keyGetter(item);
+       const collection = map.get(key);
+       if (!collection) {
+          map.set(key, [item]);
+       } else {
+          collection.push(item);
+       }
+    });
+    return map;
+ }
   public ngOnInit(): void {
     this.getLocation();
+    
   }
   onFileChanged(e: any) {
     // this.fileData = <File>fileInput.target.files[0];
@@ -45,21 +72,24 @@ export class UploadComponent implements OnInit {
     var userName =  localStorage. getItem('username');
     var useremail =  localStorage. getItem('usermail');
     var userid =  localStorage. getItem('userid');
-debugger;
+
+
     formData.append('file', this.myFiles);
     formData.append('latitude', this.lat);
     formData.append('longitude', this.lng);
     formData.append('userName', userName);
     formData.append('useremail', useremail);
     formData.append('userid', userid);
- 
+    formData.append('tags', this.formModel.value.tags);
+    formData.append('imgtype', this.formModel.value.imgtype);
     this.http.post('http://localhost:43814/api/ApplicationUser/Upload', formData, {reportProgress: true, observe: 'events'})
       .subscribe(event => {
         if (event.type === HttpEventType.UploadProgress)
           this.progress = Math.round(100 * event.loaded / event.total);
         else if (event.type === HttpEventType.Response) {
           this.message = 'Upload success.';
-          this.onUploadFinished.emit(event.body);
+          this.resData = event.body;
+          // this.onUploadFinished.emit(this.dataList);
         }
       });
   }
