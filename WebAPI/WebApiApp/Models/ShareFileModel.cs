@@ -23,6 +23,7 @@ namespace WebApiApp.Models
 
     public class ShareFileResponseModel
     {
+        public string ImageAlbum { get; set; }
         public string sharedWith { get; set; }
         public string sharedFrom { get; set; }
         public string  ImageName { get; set; }
@@ -32,11 +33,13 @@ namespace WebApiApp.Models
     {
         public ShareFileViewModel()
         {
-            shareFiles = new List<ShareFileResponseModel>();
+            shareFilestoOthers = new List<ShareFileResponseModel>();
+            shareFilestoMe = new List<ShareFileResponseModel>();
             UserList = new List<ApplicationUser>();
             uploadFormDatas = new List<UploadFormData>();
         }
-        public List<ShareFileResponseModel> shareFiles { get; set; }
+        public List<ShareFileResponseModel> shareFilestoMe { get; set; }
+        public List<ShareFileResponseModel> shareFilestoOthers { get; set; }
         public List<ApplicationUser> UserList { get; set; }
         public List<UploadFormData> uploadFormDatas { get; set; }
     }

@@ -1,0 +1,42 @@
+<div   *ngIf="displayTable" class="row card"  style="margin-left: 5%;">
+  <div class="col-md-12">
+    <h1>Shared with me!!</h1>
+    <table  datatable [dtOptions]="dtOptions" class="table table-striped table-bordered">
+      <thead>
+          <tr>
+              <th>Image Album </th>
+              <th>Image</th>
+              <th>Shared From</th>
+          </tr>
+      </thead>
+      <tbody >
+          <tr *ngFor="let shr1 of dataList.shareFilestoMe">
+              <td>{{shr1.imageAlbum}}</td>
+              <td> <img src="http://localhost:43814/resources/images/{{shr1.imageName}}"  style="height:80px; width: 100px;"></td>
+              <td>{{shr1.sharedFrom}}</td>
+          </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+<div   *ngIf="displayTable" class="row card"  style="margin-left: 5%; margin-top: 2%;">
+  <div class="col-md-12">
+    <h1>Shared with others!!</h1>
+    <table  datatable [dtOptions]="dtOptions" class="table table-striped table-bordered">
+      <thead>
+          <tr>
+              <th>Image Album </th>
+              <th>Image</th>
+              <th>Shared With</th>
+          </tr>
+      </thead>
+      <tbody >
+          <tr *ngFor="let shr of dataList.shareFilestoOthers">
+              <td>{{shr.imageAlbum}}</td>
+              <td> <img src="http://localhost:43814/resources/images/{{shr.imageName}}"  style="height:80px; width: 100px;"></td>
+              <td>{{shr.sharedWith}}</td>
+          </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

@@ -4,20 +4,17 @@
 </nav>
 
 <div class="row mt-12" style="margin-top: 2%;">
-  <div class="col-md-1"></div>
-<div class="card col-md-4" style="width:18rem" *ngIf="userDetails">
+<!-- <div class="card col-md-2" style="margin-left: 50px; max-height: 190px; padding-top: 10px;" *ngIf="userDetails">
   <ul class="list-group">
     <li class="list-group-item"><strong>Username : </strong>{{userDetails.userName}}</li>
     <li class="list-group-item"><strong>FullName : </strong>{{userDetails.fullName}}</li>
     <li class="list-group-item"><strong>Email : </strong>{{userDetails.email}}</li>
   </ul>
-</div>
-<div class="col-md-6">
+</div> -->
+<div class="col-md-7">
   <app-upload></app-upload>
 </div>
+<div class="col-md-4">
+  <app-shared-datawithme></app-shared-datawithme>
 </div>
-<!-- <div class="row">
-  <div class="offset-md-5 col-md-2">
-    <button type="button" class="btn btn-primary" (click)="onCreate()">Create </button>
-  </div>
-</div> -->
+</div>

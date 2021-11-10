@@ -18,7 +18,8 @@ export class UploadComponent implements OnInit {
   public lng;
   public myFiles;
   public resData: any;
-  
+  dtOptions: DataTables.Settings = {};
+  displayTable: boolean = false;
   public tags: string = '';
   public imgtype: string = '';
   dataList: [];
@@ -32,20 +33,27 @@ export class UploadComponent implements OnInit {
     tags: ['', Validators.required],
     imgtype: ['', Validators.required]
   });
-  formModel1 = this.formBuilder.group({
-    ShareWith: ['', Validators.required]
-  });
+  // formModel1 = this.formBuilder.group({
+  //   id: ['', Validators.required],
+  //   ShareWith: ['', Validators.required]
+  // });
 
-  public ngOnInit(): void {
+  public ngOnInit(){
     this.getLocation();
+    
+    this.dtOptions = {
+      pagingType: 'full_numbers',
+      pageLength: 5,
+      processing: true
+      
+    };
     var userid =  localStorage.getItem('userid');
     this.serviceuser.getAll(userid).subscribe(
       (res: any) => {
-        if (res.succeeded) {
-          debugger
-          this.dataList = res.body;
-        } else {
-          
+        if (res.listData) {
+          this.dtOptions = res.listData;
+        this.displayTable = true;
+          this.dataList = res.listData;
         }
       },
       err => {
@@ -54,7 +62,6 @@ export class UploadComponent implements OnInit {
     );
   }
   onFileChanged(e: any) {
-    debugger
     this.myFiles = e.target.files[0];
   }
   getLocation() {
@@ -89,22 +96,24 @@ export class UploadComponent implements OnInit {
     formData.append('userid', userid);
     formData.append('tags', this.formModel.value.tags);
     formData.append('imgtype', this.formModel.value.imgtype);
-    debugger
+    
     this.http.post('http://localhost:43814/api/ApplicationUser/Upload', formData, {reportProgress: true, observe: 'events'})
       .subscribe(event => {
         if (event.type === HttpEventType.UploadProgress)
           this.progress = Math.round(100 * event.loaded / event.total);
         else if (event.type === HttpEventType.Response) {
-          debugger
+          
           this.message = 'Upload success.';
           this.resData = event.body;
-          // this.onUploadFinished.emit(this.dataList);
+          this.dataList = this.resData.listData;
+          this.dtOptions = this.resData.listData;
+          this.displayTable = true;
         }
       });
   }
   download(file) {
-    this.fileService.download(file).subscribe((event) => {
-      this.fileUrl = "http://localhost:43814/resources/images/"+file;
+    this.fileService.download(file.target.value).subscribe((event) => {
+      this.fileUrl = "http://localhost:43814/resources/images/"+file.target.value;
       if (event.type === HttpEventType.UploadProgress)
         this.progress = Math.round((100 * event.loaded) / event.total);
       else if (event.type === HttpEventType.Response) {
@@ -127,14 +136,13 @@ export class UploadComponent implements OnInit {
   }
 
   deleteRow(Id) {
-    this.serviceuser.delete(Id).subscribe(
+    var userid =  localStorage.getItem('userid');
+    this.serviceuser.delete(Id.target.value, userid).subscribe(
       (res: any) => {
-        if (res.succeeded) {
-          this.toastr.success('Image deleted !! Successfully');
-        } else {
-          res.errors.forEach(element => {
-            
-          });
+        if (res.listData) {
+          this.dtOptions = res.listData;
+          this.displayTable = true;
+          this.dataList = res.listData;
         }
       },
       err => {
@@ -142,12 +150,13 @@ export class UploadComponent implements OnInit {
       }
     );
   }
-  onSubmitShare(Id){
+  onSubmitShare(event, imgid){
     const formData = new FormData();
     var userid =  localStorage.getItem('userid');
     formData.append('userid', userid);
-    formData.append('imgId', Id);
-    formData.append('sharedTo', this.formModel.value.ShareWith);
+    formData.append('imgId', imgid);
+    formData.append('sharedTo', event);
+    debugger;
     this.http.post('http://localhost:43814/api/ApplicationUser/SaveSharedImage', formData, {reportProgress: true, observe: 'events'})
       .subscribe(event => {
         debugger;
@@ -156,7 +165,8 @@ export class UploadComponent implements OnInit {
         else if (event.type === HttpEventType.Response) {
           this.message = 'save success.';
           this.resData = event.body;
-          // this.onUploadFinished.emit(this.dataList);
+          this.dtOptions = this.resData.listData;
+          this.displayTable = true;
         }
       });
   }

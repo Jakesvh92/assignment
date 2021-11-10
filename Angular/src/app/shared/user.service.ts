@@ -42,10 +42,9 @@ export class UserService {
     };
     return this.http.post(this.BaseURI + '/ApplicationUser/Register', body);
   }
-  delete(id) {
-      return this.http.get(`${this.BaseURI}/ApplicationUser/DeleteImg?id=${id}`, {
-          reportProgress: true
-      });
+  delete(id, userid) {
+    debugger
+      return this.http.get(`${this.BaseURI}/ApplicationUser/DeleteImg/${id}/${userid}`);
   }
   login(formData) {
     return this.http.post(this.BaseURI + '/ApplicationUser/Login', formData);
@@ -55,6 +54,6 @@ export class UserService {
     return this.http.get(this.BaseURI + '/UserProfile');
   }
   getAll(id) {
-    return this.http.get(`${this.BaseURI}/ApplicationUser/getall?id=${id}`);
+    return this.http.get(`${this.BaseURI}/ApplicationUser/getall/${id}`);
   }
 }

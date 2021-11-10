@@ -14,7 +14,7 @@ export class LoginComponent implements OnInit {
     UserName: '',
     Password: ''
   }
-  listData:[];
+  dataList:[];
   user = {
     fullName:"",
     id:"",
@@ -46,7 +46,9 @@ export class LoginComponent implements OnInit {
         debugger;
         var user = this.user;
         user = res.user;
-        this.listData = res.listData;
+        this.dataList = res.listData;
+        sessionStorage.setItem('usermail', user.email);
+        localStorage.setItem('data1', JSON.stringify(res.listData));
         localStorage.setItem('token', res.token);
         localStorage.setItem('usermail', user.email);
         localStorage.setItem('userid', user.id);

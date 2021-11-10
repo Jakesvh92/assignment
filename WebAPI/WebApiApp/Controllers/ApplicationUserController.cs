@@ -25,14 +25,12 @@ namespace WebAPI.Controllers
         private SignInManager<ApplicationUser> _singInManager;
         private readonly ApplicationSettings _appSettings;
         private readonly AuthenticationContext _context;
-        private readonly AuthenticationContext _dbcontext;
-        public ApplicationUserController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, IOptions<ApplicationSettings> appSettings, AuthenticationContext context, AuthenticationContext dbcontext)
+        public ApplicationUserController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, IOptions<ApplicationSettings> appSettings, AuthenticationContext context)
         {
             _userManager = userManager;
             _singInManager = signInManager;
             _appSettings = appSettings.Value;
             _context = context;
-            _dbcontext = dbcontext;
         }
 
         [HttpPost]
@@ -90,6 +88,7 @@ namespace WebAPI.Controllers
         [Route("Upload")]
         public IActionResult Upload([FromForm] UploadFormDataRequest formData)
         {
+            ShareFileViewModel shareFile = new ShareFileViewModel();
             try
             {
                 var file = formData.file;
@@ -125,9 +124,35 @@ namespace WebAPI.Controllers
                         _context.SaveChanges();
 
                         result = _context.UploadFormDatas.ToList();
+
+                        shareFile.shareFilestoOthers = (from item in _context.ShareFiles
+                                                join img in _context.UploadFormDatas on item.imgId equals img.Id
+                                                join user in _context.ApplicationUsers on item.userId equals user.Id
+                                                join shareTo in _context.ApplicationUsers on item.sharedTo equals shareTo.Id
+                                                where item.userId == formData.userid
+                                                select new ShareFileResponseModel
+                                                {
+                                                    ImageName = img.filename,
+                                                    sharedFrom = user.FullName + "_" + user.UserName,
+                                                    sharedWith = shareTo.FullName + "_" + shareTo.UserName,
+                                                    ImageAlbum = img.imgtype
+                                                }).Distinct().ToList();
+                        shareFile.shareFilestoMe = (from item in _context.ShareFiles
+                                                    join img in _context.UploadFormDatas on item.imgId equals img.Id
+                                                    join user in _context.ApplicationUsers on item.userId equals user.Id
+                                                    join shareTo in _context.ApplicationUsers on item.sharedTo equals shareTo.Id
+                                                    where item.sharedTo == formData.userid
+                                                    select new ShareFileResponseModel
+                                                    {
+                                                        ImageName = img.filename,
+                                                        sharedFrom = user.FullName + "_" + user.UserName,
+                                                        sharedWith = shareTo.FullName + "_" + shareTo.UserName,
+                                                        ImageAlbum = img.imgtype
+                                                    }).Distinct().ToList();
+                        shareFile.UserList = _context.ApplicationUsers.Where(u => u.Id != formData.userid).ToList();
+                        shareFile.uploadFormDatas = _context.UploadFormDatas.Where(x => x.userid == formData.userid).ToList();
                     }
-                    var listData = getAllListAtOnce(formData.userid);
-                    return Ok(new { dbPath = dbPath, result = result, listData = listData });
+                    return Ok(new { dbPath = dbPath, result = result, listData = shareFile });
                 }
                 else
                 {
@@ -141,23 +166,48 @@ namespace WebAPI.Controllers
         }
 
         [HttpGet]
-        [Route("DeleteImg")]
-        public async Task<IActionResult> DeleteImg(int id)
+        [Route("DeleteImg/{id}/{userId}")]
+        public async Task<IActionResult> DeleteImg(string id, string userId)
         {
-            List<UploadFormData> result = new List<UploadFormData>();
-            var img = new UploadFormData()
+            ShareFileViewModel shareFile = new ShareFileViewModel();
+            var img1 = new UploadFormData()
             {
-                Id = id
+                Id = string.IsNullOrWhiteSpace(id) ? 0 : Convert.ToInt32(id)
             };
 
             using (_context)
             {
-                _context.Remove<UploadFormData>(img);
+                _context.Remove<UploadFormData>(img1);
                 _context.SaveChanges();
 
-                result = _context.UploadFormDatas.ToList();
+                shareFile.shareFilestoOthers = (from item in _context.ShareFiles
+                                                join img in _context.UploadFormDatas on item.imgId equals img.Id
+                                                join user in _context.ApplicationUsers on item.userId equals user.Id
+                                                join shareTo in _context.ApplicationUsers on item.sharedTo equals shareTo.Id
+                                                where item.userId == userId
+                                                select new ShareFileResponseModel
+                                                {
+                                                    ImageName = img.filename,
+                                                    sharedFrom = user.FullName + "_" + user.UserName,
+                                                    sharedWith = shareTo.FullName + "_" + shareTo.UserName,
+                                                    ImageAlbum = img.imgtype
+                                                }).Distinct().ToList();
+                shareFile.shareFilestoMe = (from item in _context.ShareFiles
+                                            join img in _context.UploadFormDatas on item.imgId equals img.Id
+                                            join user in _context.ApplicationUsers on item.userId equals user.Id
+                                            join shareTo in _context.ApplicationUsers on item.sharedTo equals shareTo.Id
+                                            where item.sharedTo == userId
+                                            select new ShareFileResponseModel
+                                            {
+                                                ImageName = img.filename,
+                                                sharedFrom = user.FullName + "_" + user.UserName,
+                                                sharedWith = shareTo.FullName + "_" + shareTo.UserName,
+                                                ImageAlbum = img.imgtype
+                                            }).Distinct().ToList();
+                shareFile.UserList = _context.ApplicationUsers.Where(u => u.Id != userId).ToList();
+                shareFile.uploadFormDatas = _context.UploadFormDatas.Where(u => u.captureBy == userId).ToList();
             }
-            return Ok(result);
+            return Ok(new { listData = shareFile });
         }
 
         [HttpPost]
@@ -170,50 +220,77 @@ namespace WebAPI.Controllers
                 _context.ShareFiles.Add(formData);
                 _context.SaveChanges();
 
-                shareFile.shareFiles = (from item in _context.ShareFiles
-                                        join img in _context.UploadFormDatas on item.imgId equals img.Id
-                                        join user in _context.ApplicationUsers on item.userId equals user.Id
-                                        join shareTo in _context.ApplicationUsers on item.userId equals shareTo.Id
-                                        select new ShareFileResponseModel
-                                        {
-                                            ImageName = img.filename,
-                                            sharedFrom = user.FullName,
-                                            sharedWith = shareTo.FullName
-                                        }).ToList();
-                shareFile.UserList = _context.ApplicationUsers.ToList();
-                shareFile.uploadFormDatas = _context.UploadFormDatas.ToList();
+                shareFile.shareFilestoOthers = (from item in _context.ShareFiles
+                                                join img in _context.UploadFormDatas on item.imgId equals img.Id
+                                                join user in _context.ApplicationUsers on item.userId equals user.Id
+                                                join shareTo in _context.ApplicationUsers on item.sharedTo equals shareTo.Id
+                                                where item.userId == formData.userId
+                                                select new ShareFileResponseModel
+                                                {
+                                                    ImageName = img.filename,
+                                                    sharedFrom = user.FullName + "_" + user.UserName,
+                                                    sharedWith = shareTo.FullName + "_" + shareTo.UserName,
+                                                    ImageAlbum = img.imgtype
+                                                }).Distinct().ToList();
+                shareFile.shareFilestoMe = (from item in _context.ShareFiles
+                                            join img in _context.UploadFormDatas on item.imgId equals img.Id
+                                            join user in _context.ApplicationUsers on item.userId equals user.Id
+                                            join shareTo in _context.ApplicationUsers on item.sharedTo equals shareTo.Id
+                                            where item.sharedTo == formData.userId
+                                            select new ShareFileResponseModel
+                                            {
+                                                ImageName = img.filename,
+                                                sharedFrom = user.FullName + "_" + user.UserName,
+                                                sharedWith = shareTo.FullName + "_" + shareTo.UserName,
+                                                ImageAlbum = img.imgtype
+                                            }).Distinct().ToList();
+                shareFile.UserList = _context.ApplicationUsers.Where(u => u.Id != formData.userId).ToList();
+                shareFile.uploadFormDatas = _context.UploadFormDatas.Where(u => u.captureBy == formData.userId).ToList();
             }
-            return Ok(shareFile);
+            return Ok(new { listData = shareFile });
         }
 
         private ShareFileViewModel getAllListAtOnce(string userId)
         {
             ShareFileViewModel shareFile = new ShareFileViewModel();
-            using (_dbcontext)
+            using (_context)
             {
-                shareFile.shareFiles = (from item in _dbcontext.ShareFiles
-                                        join img in _dbcontext.UploadFormDatas on item.imgId equals img.Id
-                                        join user in _dbcontext.ApplicationUsers on item.userId equals user.Id
-                                        join shareTo in _dbcontext.ApplicationUsers on item.userId equals shareTo.Id
-                                        where img.userid == userId && item.userId == userId
-                                        select new ShareFileResponseModel
-                                        {
-                                            ImageName = img.filename,
-                                            sharedFrom = user.FullName,
-                                            sharedWith = shareTo.FullName
-                                        }).ToList();
-                shareFile.UserList = _dbcontext.ApplicationUsers.ToList();
-                shareFile.uploadFormDatas = _dbcontext.UploadFormDatas.Where(x=>x.userid == userId).ToList();
+                shareFile.shareFilestoOthers = (from item in _context.ShareFiles
+                                                join img in _context.UploadFormDatas on item.imgId equals img.Id
+                                                join user in _context.ApplicationUsers on item.userId equals user.Id
+                                                join shareTo in _context.ApplicationUsers on item.sharedTo equals shareTo.Id
+                                                where item.userId == userId
+                                                select new ShareFileResponseModel
+                                                {
+                                                    ImageName = img.filename,
+                                                    sharedFrom = user.FullName + "_" + user.UserName,
+                                                    sharedWith = shareTo.FullName + "_" + shareTo.UserName,
+                                                    ImageAlbum = img.imgtype
+                                                }).Distinct().ToList();
+                shareFile.shareFilestoMe = (from item in _context.ShareFiles
+                                            join img in _context.UploadFormDatas on item.imgId equals img.Id
+                                            join user in _context.ApplicationUsers on item.userId equals user.Id
+                                            join shareTo in _context.ApplicationUsers on item.sharedTo equals shareTo.Id
+                                            where item.sharedTo == userId
+                                            select new ShareFileResponseModel
+                                            {
+                                                ImageName = img.filename,
+                                                sharedFrom = user.FullName + "_" + user.UserName,
+                                                sharedWith = shareTo.FullName + "_" + shareTo.UserName,
+                                                ImageAlbum = img.imgtype
+                                            }).Distinct().ToList();
+                shareFile.UserList = _context.ApplicationUsers.Where(u => u.Id != userId).ToList();
+                shareFile.uploadFormDatas = _context.UploadFormDatas.Where(u => u.captureBy == userId).ToList();
             }
             return shareFile;
         }
 
         [HttpGet]
-        [Route("getall")]
+        [Route("getall/{id}")]
         public async Task<IActionResult> getall(string id)
         {
             var list = getAllListAtOnce(id);
-            return Ok(list);
+            return Ok(new { listData = list });
         }
         [HttpGet, DisableRequestSizeLimit]
         [Route("download")]

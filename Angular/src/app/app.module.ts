@@ -14,6 +14,9 @@ import { LoginComponent } from './user/login/login.component';
 import { HomeComponent } from './home/home.component';
 import { AuthInterceptor } from './auth/auth.interceptor';
 import { UploadComponent } from './upload/upload.component';
+import { SharedDataComponent } from './upload/shared-data/shared-data.component';
+import { SharedDatawithmeComponent } from './upload/shared-datawithme/shared-datawithme.component';
+import { DataTablesModule } from 'angular-datatables';
 
 @NgModule({
   declarations: [
@@ -22,10 +25,13 @@ import { UploadComponent } from './upload/upload.component';
     RegistrationComponent,
     LoginComponent,
     HomeComponent,
-    UploadComponent
+    UploadComponent,
+    SharedDataComponent,
+    SharedDatawithmeComponent
   ],
   imports: [
     BrowserModule,
+    DataTablesModule,
     AppRoutingModule,
     ReactiveFormsModule,
     HttpClientModule,
