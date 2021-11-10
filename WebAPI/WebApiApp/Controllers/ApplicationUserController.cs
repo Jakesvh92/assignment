@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using WebApiApp.Models;
@@ -24,12 +25,14 @@ namespace WebAPI.Controllers
         private SignInManager<ApplicationUser> _singInManager;
         private readonly ApplicationSettings _appSettings;
         private readonly AuthenticationContext _context;
-        public ApplicationUserController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, IOptions<ApplicationSettings> appSettings, AuthenticationContext context)
+        private readonly AuthenticationContext _dbcontext;
+        public ApplicationUserController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, IOptions<ApplicationSettings> appSettings, AuthenticationContext context, AuthenticationContext dbcontext)
         {
             _userManager = userManager;
             _singInManager = signInManager;
             _appSettings = appSettings.Value;
             _context = context;
+            _dbcontext = dbcontext;
         }
 
         [HttpPost]
@@ -76,12 +79,13 @@ namespace WebAPI.Controllers
                 var tokenHandler = new JwtSecurityTokenHandler();
                 var securityToken = tokenHandler.CreateToken(tokenDescriptor);
                 var token = tokenHandler.WriteToken(securityToken);
-                return Ok(new { token = token, user = user });
+                var listData = getAllListAtOnce(user.Id);
+                return Ok(new { token = token, user = user, listData = listData });
             }
             else
                 return BadRequest(new { message = "Username or password is incorrect." });
         }
-       
+
         [HttpPost, DisableRequestSizeLimit]
         [Route("Upload")]
         public IActionResult Upload([FromForm] UploadFormDataRequest formData)
@@ -122,8 +126,8 @@ namespace WebAPI.Controllers
 
                         result = _context.UploadFormDatas.ToList();
                     }
-
-                    return Ok(new { dbPath = dbPath, result= result });
+                    var listData = getAllListAtOnce(formData.userid);
+                    return Ok(new { dbPath = dbPath, result = result, listData = listData });
                 }
                 else
                 {
@@ -134,6 +138,110 @@ namespace WebAPI.Controllers
             {
                 return StatusCode(500, $"Internal server error: {ex}");
             }
+        }
+
+        [HttpGet]
+        [Route("DeleteImg")]
+        public async Task<IActionResult> DeleteImg(int id)
+        {
+            List<UploadFormData> result = new List<UploadFormData>();
+            var img = new UploadFormData()
+            {
+                Id = id
+            };
+
+            using (_context)
+            {
+                _context.Remove<UploadFormData>(img);
+                _context.SaveChanges();
+
+                result = _context.UploadFormDatas.ToList();
+            }
+            return Ok(result);
+        }
+
+        [HttpPost]
+        [Route("SaveSharedImage")]
+        public async Task<IActionResult> SaveSharedImage([FromForm] ShareFileModel formData)
+        {
+            ShareFileViewModel shareFile = new ShareFileViewModel();
+            using (_context)
+            {
+                _context.ShareFiles.Add(formData);
+                _context.SaveChanges();
+
+                shareFile.shareFiles = (from item in _context.ShareFiles
+                                        join img in _context.UploadFormDatas on item.imgId equals img.Id
+                                        join user in _context.ApplicationUsers on item.userId equals user.Id
+                                        join shareTo in _context.ApplicationUsers on item.userId equals shareTo.Id
+                                        select new ShareFileResponseModel
+                                        {
+                                            ImageName = img.filename,
+                                            sharedFrom = user.FullName,
+                                            sharedWith = shareTo.FullName
+                                        }).ToList();
+                shareFile.UserList = _context.ApplicationUsers.ToList();
+                shareFile.uploadFormDatas = _context.UploadFormDatas.ToList();
+            }
+            return Ok(shareFile);
+        }
+
+        private ShareFileViewModel getAllListAtOnce(string userId)
+        {
+            ShareFileViewModel shareFile = new ShareFileViewModel();
+            using (_dbcontext)
+            {
+                shareFile.shareFiles = (from item in _dbcontext.ShareFiles
+                                        join img in _dbcontext.UploadFormDatas on item.imgId equals img.Id
+                                        join user in _dbcontext.ApplicationUsers on item.userId equals user.Id
+                                        join shareTo in _dbcontext.ApplicationUsers on item.userId equals shareTo.Id
+                                        where img.userid == userId && item.userId == userId
+                                        select new ShareFileResponseModel
+                                        {
+                                            ImageName = img.filename,
+                                            sharedFrom = user.FullName,
+                                            sharedWith = shareTo.FullName
+                                        }).ToList();
+                shareFile.UserList = _dbcontext.ApplicationUsers.ToList();
+                shareFile.uploadFormDatas = _dbcontext.UploadFormDatas.Where(x=>x.userid == userId).ToList();
+            }
+            return shareFile;
+        }
+
+        [HttpGet]
+        [Route("getall")]
+        public async Task<IActionResult> getall(string id)
+        {
+            var list = getAllListAtOnce(id);
+            return Ok(list);
+        }
+        [HttpGet, DisableRequestSizeLimit]
+        [Route("download")]
+        public async Task<IActionResult> Download([FromQuery] string fileUrl)
+        {
+            var folderName = Path.Combine(@"wwwroot\Resources", "Images");
+            var filePath = Path.Combine(Directory.GetCurrentDirectory(), folderName, fileUrl);
+            if (!System.IO.File.Exists(filePath))
+                return NotFound();
+            var memory = new MemoryStream();
+            await using (var stream = new FileStream(filePath, FileMode.Open))
+            {
+                await stream.CopyToAsync(memory);
+            }
+            memory.Position = 0;
+            return File(memory, GetContentType(filePath), filePath);
+        }
+        private string GetContentType(string path)
+        {
+            var provider = new FileExtensionContentTypeProvider();
+            string contentType;
+
+            if (!provider.TryGetContentType(path, out contentType))
+            {
+                contentType = "application/octet-stream";
+            }
+
+            return contentType;
         }
     }
 }

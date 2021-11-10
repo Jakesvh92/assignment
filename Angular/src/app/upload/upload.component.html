@@ -1,7 +1,4 @@
 
-<link href="//cdn.datatables.net/1.11.3/css/jquery.dataTables.min.css">
-<script src="//cdn.datatables.net/1.11.3/js/jquery.dataTables.min.js"></script>
-
 <div class="row card" style="margin-left:25px; padding-top: 20px;">
   <form  [formGroup]="formModel" (ngSubmit)="onSubmit()">
     <div class="form-group">
@@ -24,78 +21,6 @@
     </div>
   </form>
 </div>
-<table datatable class="row-border hover">
-  <thead>
-    <tr>
-      <th>ID</th>
-      <th>First name</th>
-      <th>Last name</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>1</td>
-      <td>Foo</td>
-      <td>Bar</td>
-    </tr>
-    <tr>
-      <td>2</td>
-      <td>Someone</td>
-      <td>Youknow</td>
-    </tr>
-    <tr>
-      <td>3</td>
-      <td>Iamout</td>
-      <td>Ofinspiration</td>
-    </tr>
-    <tr>
-      <td>4</td>
-      <td>Yoda</td>
-      <td>Skywalker</td>
-    </tr>
-    <tr>
-      <td>5</td>
-      <td>Patrick</td>
-      <td>Dupont</td>
-    </tr>
-    <tr>
-      <td>6</td>
-      <td>Barack</td>
-      <td>Obama</td>
-    </tr>
-    <tr>
-      <td>7</td>
-      <td>François</td>
-      <td>Holland</td>
-    </tr>
-    <tr>
-      <td>8</td>
-      <td>Michel</td>
-      <td>Popo</td>
-    </tr>
-    <tr>
-      <td>9</td>
-      <td>Chuck</td>
-      <td>Norris</td>
-    </tr>
-    <tr>
-      <td>10</td>
-      <td>Simon</td>
-      <td>Robin</td>
-    </tr>
-    <tr>
-      <td>11</td>
-      <td>Louis</td>
-      <td>Lin</td>
-    </tr>
-    <tr>
-      <td>12</td>
-      <td>Zelda</td>
-      <td>Link</td>
-    </tr>
-  </tbody>
-</table>
-
 
 <div class="row card" style="margin-left:25px; margin-top: 20px;max-height: 420px; overflow-y: auto;">
   <table datatable class="table table-striped table-bordered">
@@ -107,6 +32,7 @@
             <th>Geo-Location</th>
             <th>Capture By / Date</th>
             <th>Action</th>
+            <th>Share</th>
         </tr>
     </thead>
     <tbody >
@@ -117,9 +43,21 @@
             <td>{{upd.latitude}} / {{upd.longitude}}</td>
             <td>{{upd.userName}} / {{upd.captureDate}}</td>
             <td>
-              <button>Del</button>
-              <button>Download</button>
-              <button>Share</button>
+              <button id="remove" (click)="deleteRow($event)" value="{{upd.Id}}">Delete</button>
+              <button type="button" value="{{upd.filename}}" class="btn btn-success" (click)="download($event)">Download</button>
+            </td>
+            <td>
+              <form  [formGroup]="formModel1" (ngSubmit)="onSubmitShare()">
+                <div class="form-group">
+                  <input type="hidden" value="{{upd.Id}}" id="id" name="id" formControlName="id" />
+                </div>
+                <select  name="ShareWith" formControlName="ShareWith" required class="form-control" id="ShareWith">
+                  <option *ngFor="let test of UserList" [value]="test.Id">{{test.FullName}}</option>
+              </select> 
+              <div class="form-group">
+                <button class="btn btn-primary">Share</button>
+            </div>
+              </form>
             </td>
         </tr>
     </tbody>

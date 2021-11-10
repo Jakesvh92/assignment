@@ -42,12 +42,19 @@ export class UserService {
     };
     return this.http.post(this.BaseURI + '/ApplicationUser/Register', body);
   }
-
+  delete(id) {
+      return this.http.get(`${this.BaseURI}/ApplicationUser/DeleteImg?id=${id}`, {
+          reportProgress: true
+      });
+  }
   login(formData) {
     return this.http.post(this.BaseURI + '/ApplicationUser/Login', formData);
   }
 
   getUserProfile() {
     return this.http.get(this.BaseURI + '/UserProfile');
+  }
+  getAll(id) {
+    return this.http.get(`${this.BaseURI}/ApplicationUser/getall?id=${id}`);
   }
 }

@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WebApiApp.Models;
 
 namespace WebApiApp.Migrations
 {
     [DbContext(typeof(AuthenticationContext))]
-    partial class AuthenticationContextModelSnapshot : ModelSnapshot
+    [Migration("20211109174822_MyFirstMigration4")]
+    partial class MyFirstMigration4
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -231,11 +233,8 @@ namespace WebApiApp.Migrations
                     b.Property<int>("imgId")
                         .HasColumnType("int");
 
-                    b.Property<string>("sharedTo")
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("userId")
-                        .HasColumnType("nvarchar(500)");
+                    b.Property<int>("userId")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
